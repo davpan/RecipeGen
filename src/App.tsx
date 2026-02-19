@@ -145,6 +145,7 @@ function App() {
           onRetry={() => startCooking(selectedIdea)}
           onPrevStep={prevStep}
           onNextStep={nextStep}
+          onSelectStep={setCurrentStep}
         />
       )}
     </main>

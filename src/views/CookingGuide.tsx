@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '../components/ui/carousel'
 import type { FullRecipe, RecipeIdea } from '../types/recipe'
 
 type CookingGuideProps = {
@@ -12,6 +14,7 @@ type CookingGuideProps = {
   onRetry: () => void
   onPrevStep: () => void
   onNextStep: () => void
+  onSelectStep: (stepIndex: number) => void
 }
 
 function CookingGuide({
@@ -26,7 +29,36 @@ function CookingGuide({
   onRetry,
   onPrevStep,
   onNextStep,
+  onSelectStep,
 }: CookingGuideProps) {
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+
+  useEffect(() => {
+    if (!carouselApi || !activeRecipe) return
+    if (carouselApi.selectedScrollSnap() !== currentStep) {
+      carouselApi.scrollTo(currentStep)
+    }
+  }, [activeRecipe, carouselApi, currentStep])
+
+  useEffect(() => {
+    if (!carouselApi || !activeRecipe) return
+
+    const handleSelect = () => {
+      const selectedStep = carouselApi.selectedScrollSnap()
+      if (selectedStep !== currentStep) {
+        onSelectStep(selectedStep)
+      }
+    }
+
+    carouselApi.on('select', handleSelect)
+    carouselApi.on('reInit', handleSelect)
+
+    return () => {
+      carouselApi.off('select', handleSelect)
+      carouselApi.off('reInit', handleSelect)
+    }
+  }, [activeRecipe, carouselApi, currentStep, onSelectStep])
+
   return (
     <section className="mx-auto max-w-5xl">
       <button
@@ -85,7 +117,43 @@ function CookingGuide({
                 </div>
               )}
               {!detailsLoading && !detailsError && activeRecipe && (
-                <p className="text-base font-medium text-slate-900">{activeRecipe.steps[currentStep]}</p>
+                <Carousel
+                  orientation="vertical"
+                  setApi={setCarouselApi}
+                  opts={{ align: 'start', containScroll: 'trimSnaps' }}
+                  className="h-[360px] overflow-hidden"
+                >
+                  <CarouselContent className="-mt-3 h-full">
+                    {activeRecipe.steps.map((step, index) => {
+                      const isActive = index === currentStep
+                      return (
+                        <CarouselItem key={`${index}-${step}`} className="basis-auto pt-3">
+                          <button
+                            type="button"
+                            onClick={() => onSelectStep(index)}
+                            className={`w-full rounded-lg border px-4 py-4 text-left transition-colors transition-shadow ${
+                              isActive
+                                ? 'border-slate-900 bg-white shadow-sm'
+                                : 'border-slate-200 bg-slate-100/70 opacity-85 hover:opacity-100'
+                            }`}
+                            aria-current={isActive ? 'step' : undefined}
+                          >
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                              Step {index + 1}
+                            </p>
+                            <p
+                              className={`mt-2 text-base leading-relaxed transition-colors ${
+                                isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                              }`}
+                            >
+                              {step}
+                            </p>
+                          </button>
+                        </CarouselItem>
+                      )
+                    })}
+                  </CarouselContent>
+                </Carousel>
               )}
             </div>
 
