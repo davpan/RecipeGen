@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '../components/ui/carousel'
+import { useLayoutEffect, useRef } from 'react'
 import type { FullRecipe, RecipeIdea } from '../types/recipe'
 
 type CookingGuideProps = {
@@ -31,33 +30,21 @@ function CookingGuide({
   onNextStep,
   onSelectStep,
 }: CookingGuideProps) {
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const stepListRef = useRef<HTMLDivElement | null>(null)
+  const stepRefs = useRef<Array<HTMLButtonElement | null>>([])
 
-  useEffect(() => {
-    if (!carouselApi || !activeRecipe) return
-    if (carouselApi.selectedScrollSnap() !== currentStep) {
-      carouselApi.scrollTo(currentStep)
-    }
-  }, [activeRecipe, carouselApi, currentStep])
+  useLayoutEffect(() => {
+    if (!activeRecipe) return
 
-  useEffect(() => {
-    if (!carouselApi || !activeRecipe) return
+    const stepElement = stepRefs.current[currentStep]
+    if (!stepElement) return
 
-    const handleSelect = () => {
-      const selectedStep = carouselApi.selectedScrollSnap()
-      if (selectedStep !== currentStep) {
-        onSelectStep(selectedStep)
-      }
-    }
-
-    carouselApi.on('select', handleSelect)
-    carouselApi.on('reInit', handleSelect)
-
-    return () => {
-      carouselApi.off('select', handleSelect)
-      carouselApi.off('reInit', handleSelect)
-    }
-  }, [activeRecipe, carouselApi, currentStep, onSelectStep])
+    stepElement.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'auto',
+    })
+  }, [activeRecipe, currentStep])
 
   return (
     <section className="mx-auto max-w-5xl">
@@ -117,43 +104,38 @@ function CookingGuide({
                 </div>
               )}
               {!detailsLoading && !detailsError && activeRecipe && (
-                <Carousel
-                  orientation="vertical"
-                  setApi={setCarouselApi}
-                  opts={{ align: 'start', containScroll: 'trimSnaps' }}
-                  className="h-[360px] overflow-hidden"
-                >
-                  <CarouselContent className="-mt-3 h-full">
-                    {activeRecipe.steps.map((step, index) => {
-                      const isActive = index === currentStep
-                      return (
-                        <CarouselItem key={`${index}-${step}`} className="basis-auto pt-3">
-                          <button
-                            type="button"
-                            onClick={() => onSelectStep(index)}
-                            className={`w-full rounded-lg border px-4 py-4 text-left transition-colors transition-shadow ${
-                              isActive
-                                ? 'border-slate-900 bg-white shadow-sm'
-                                : 'border-slate-200 bg-slate-100/70 opacity-85 hover:opacity-100'
-                            }`}
-                            aria-current={isActive ? 'step' : undefined}
-                          >
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              Step {index + 1}
-                            </p>
-                            <p
-                              className={`mt-2 text-base leading-relaxed transition-colors ${
-                                isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
-                              }`}
-                            >
-                              {step}
-                            </p>
-                          </button>
-                        </CarouselItem>
-                      )
-                    })}
-                  </CarouselContent>
-                </Carousel>
+                <div ref={stepListRef} className="max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                  {activeRecipe.steps.map((step, index) => {
+                    const isActive = index === currentStep
+                    return (
+                      <button
+                        key={`${index}-${step}`}
+                        ref={(element) => {
+                          stepRefs.current[index] = element
+                        }}
+                        type="button"
+                        onClick={() => onSelectStep(index)}
+                        className={`w-full rounded-lg border px-4 py-4 text-left transition-colors transition-shadow ${
+                          isActive
+                            ? 'border-slate-900 bg-white shadow-sm'
+                            : 'border-slate-200 bg-slate-100/70 opacity-85 hover:opacity-100'
+                        }`}
+                        aria-current={isActive ? 'step' : undefined}
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Step {index + 1}
+                        </p>
+                        <p
+                          className={`mt-2 text-base leading-relaxed transition-colors ${
+                            isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                          }`}
+                        >
+                          {step}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
               )}
             </div>
 
