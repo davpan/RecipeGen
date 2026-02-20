@@ -47,7 +47,7 @@ function assertRecipeDetails(parsed: RecipeDetails): asserts parsed is RecipeDet
     typeof parsed.servings !== 'string' ||
     !Array.isArray(parsed.ingredients) ||
     !Array.isArray(parsed.steps) ||
-    parsed.steps.length < 4
+    parsed.steps.length === 0
   ) {
     throw new Error('Unexpected recipe detail response format.')
   }
@@ -97,10 +97,12 @@ Return only strict JSON in this exact format:
 {
   "servings": "e.g. 4",
   "ingredients": ["..."],
-  "steps": ["...", "...", "...", "..."]
+  "steps": ["Step 1...", "Step 2..."]
 }
 Requirements:
-- At least 4 steps
+- Use as many steps as needed for an optimal cooking flow (no fixed minimum)
+- Keep each step simple, clear, and action-oriented
+- Keep steps in chronological order, adding timing or doneness cues when helpful
 - Ingredients and steps must match the selected idea
 - Keep the recipe practical for home cooking`,
     'Failed to parse recipe details as JSON.',
