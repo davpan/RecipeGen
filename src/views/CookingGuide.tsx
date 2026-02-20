@@ -36,14 +36,17 @@ function CookingGuide({
   useLayoutEffect(() => {
     if (!activeRecipe) return
 
+    const container = stepListRef.current
     const stepElement = stepRefs.current[currentStep]
-    if (!stepElement) return
+    if (!container || !stepElement) return
 
-    stepElement.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-      behavior: 'auto',
-    })
+    const containerRect = container.getBoundingClientRect()
+    const stepRect = stepElement.getBoundingClientRect()
+    const targetTop = container.scrollTop + (stepRect.top - containerRect.top)
+    const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
+    const nextScrollTop = Math.min(Math.max(0, targetTop), maxScrollTop)
+
+    container.scrollTo({ top: nextScrollTop, behavior: 'auto' })
   }, [activeRecipe, currentStep])
 
   return (
@@ -78,7 +81,7 @@ function CookingGuide({
             )}
           </aside>
 
-          <div>
+          <div className="flex min-h-0 flex-col lg:max-h-[calc(100dvh-16rem)]">
             <div className="mb-5">
               <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
                 <span>{activeRecipe ? `Step ${currentStep + 1} of ${totalSteps}` : 'Preparing recipe'}</span>
@@ -89,10 +92,14 @@ function CookingGuide({
               </div>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-4">
-              {detailsLoading && <p className="text-sm text-slate-600">Generating the full recipe...</p>}
+            <div className="min-h-0 flex-1">
+              {detailsLoading && (
+                <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
+                  Generating the full recipe...
+                </p>
+              )}
               {!detailsLoading && detailsError && (
-                <div className="space-y-3">
+                <div className="space-y-3 rounded-lg bg-slate-50 p-4">
                   <p className="text-sm text-red-600">{detailsError}</p>
                   <button
                     type="button"
@@ -104,7 +111,7 @@ function CookingGuide({
                 </div>
               )}
               {!detailsLoading && !detailsError && activeRecipe && (
-                <div ref={stepListRef} className="max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                <div ref={stepListRef} className="h-full min-h-0 space-y-3 overflow-y-auto">
                   {activeRecipe.steps.map((step, index) => {
                     const isActive = index === currentStep
                     return (
@@ -126,8 +133,8 @@ function CookingGuide({
                           Step {index + 1}
                         </p>
                         <p
-                          className={`mt-2 text-base leading-relaxed transition-colors ${
-                            isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                          className={`mt-2 text-sm leading-relaxed transition-colors ${
+                            isActive ? 'text-lg font-semibold text-slate-900' : 'font-medium text-slate-700'
                           }`}
                         >
                           {step}
