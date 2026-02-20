@@ -108,7 +108,7 @@ function CookingGuide({
             </p>
           </div>
 
-          <div className="pt-8 border-t border-charcoal/10 overflow-y-auto max-h-[calc(100dvh-25rem)] pr-2 scrollbar-thin">
+          <div className="pt-8 border-t border-charcoal/10">
             <h2 className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal mb-6">
               Ingredients
             </h2>
