@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { useKeenSlider } from 'keen-slider/react'
+import 'keen-slider/keen-slider.min.css'
 import type { FullRecipe, RecipeIdea } from '../types/recipe'
 
 type CookingGuideProps = {
@@ -7,12 +9,8 @@ type CookingGuideProps = {
   detailsLoading: boolean
   detailsError: string | null
   currentStep: number
-  totalSteps: number
-  progress: number
   onBack: () => void
   onRetry: () => void
-  onPrevStep: () => void
-  onNextStep: () => void
   onSelectStep: (stepIndex: number) => void
 }
 
@@ -22,32 +20,66 @@ function CookingGuide({
   detailsLoading,
   detailsError,
   currentStep,
-  totalSteps,
-  progress,
   onBack,
   onRetry,
-  onPrevStep,
-  onNextStep,
   onSelectStep,
 }: CookingGuideProps) {
-  const stepListRef = useRef<HTMLDivElement | null>(null)
-  const stepRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const touchStartY = useRef<number | null>(null)
 
-  useLayoutEffect(() => {
+  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+    initial: currentStep,
+    vertical: true,
+    mode: 'snap',
+    drag: false,
+    rubberband: false,
+    slides: { perView: 'auto', spacing: 12 },
+  })
+
+  useEffect(() => {
+    if (!activeRecipe || !slider.current) return
+
+    const currentSlide = slider.current.track.details.rel
+    if (currentSlide !== currentStep) {
+      slider.current.moveToIdx(currentStep, true)
+    }
+  }, [activeRecipe, currentStep, slider])
+
+  const handleStepKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!activeRecipe) return
 
-    const container = stepListRef.current
-    const stepElement = stepRefs.current[currentStep]
-    if (!container || !stepElement) return
+    if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+      event.preventDefault()
+      onSelectStep(Math.min(currentStep + 1, activeRecipe.steps.length - 1))
+    }
 
-    const containerRect = container.getBoundingClientRect()
-    const stepRect = stepElement.getBoundingClientRect()
-    const targetTop = container.scrollTop + (stepRect.top - containerRect.top)
-    const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
-    const nextScrollTop = Math.min(Math.max(0, targetTop), maxScrollTop)
+    if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+      event.preventDefault()
+      onSelectStep(Math.max(currentStep - 1, 0))
+    }
+  }
 
-    container.scrollTo({ top: nextScrollTop, behavior: 'auto' })
-  }, [activeRecipe, currentStep])
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartY.current = event.touches[0]?.clientY ?? null
+  }
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!activeRecipe || touchStartY.current === null) return
+
+    const endY = event.changedTouches[0]?.clientY
+    if (typeof endY !== 'number') return
+
+    const deltaY = endY - touchStartY.current
+    touchStartY.current = null
+
+    if (Math.abs(deltaY) < 40) return
+
+    if (deltaY < 0) {
+      onSelectStep(Math.min(currentStep + 1, activeRecipe.steps.length - 1))
+      return
+    }
+
+    onSelectStep(Math.max(currentStep - 1, 0))
+  }
 
   return (
     <section className="mx-auto max-w-5xl">
@@ -81,17 +113,7 @@ function CookingGuide({
             )}
           </aside>
 
-          <div className="flex min-h-0 flex-col lg:max-h-[calc(100dvh-16rem)]">
-            <div className="mb-5">
-              <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                <span>{activeRecipe ? `Step ${currentStep + 1} of ${totalSteps}` : 'Preparing recipe'}</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-slate-200">
-                <div className="h-2 rounded-full bg-slate-900" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-
+          <div className="flex min-h-0 max-h-[calc(100dvh-16rem)] flex-col">
             <div className="min-h-0 flex-1">
               {detailsLoading && (
                 <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
@@ -111,21 +133,27 @@ function CookingGuide({
                 </div>
               )}
               {!detailsLoading && !detailsError && activeRecipe && (
-                <div ref={stepListRef} className="h-full min-h-0 space-y-3 overflow-y-auto">
+                <div
+                  ref={sliderRef}
+                  className="recipe-step-slider keen-slider h-full min-h-0 overflow-hidden"
+                  onKeyDown={handleStepKeyDown}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  tabIndex={0}
+                  aria-label="Recipe steps"
+                >
                   {activeRecipe.steps.map((step, index) => {
                     const isActive = index === currentStep
                     return (
                       <button
                         key={`${index}-${step}`}
-                        ref={(element) => {
-                          stepRefs.current[index] = element
-                        }}
                         type="button"
                         onClick={() => onSelectStep(index)}
-                        className={`w-full rounded-lg border px-4 py-4 text-left transition-colors transition-shadow ${
+                        style={{ minHeight: 'auto' }}
+                        className={`keen-slider__slide h-auto rounded-lg px-4 py-4 text-left transition-colors transition-opacity transition-shadow duration-200 ${
                           isActive
-                            ? 'border-slate-900 bg-white shadow-sm'
-                            : 'border-slate-200 bg-slate-100/70 opacity-85 hover:opacity-100'
+                            ? 'border border-slate-900 bg-white shadow-md'
+                            : 'border-transparent bg-transparent opacity-70 hover:opacity-100'
                         }`}
                         aria-current={isActive ? 'step' : undefined}
                       >
@@ -133,8 +161,8 @@ function CookingGuide({
                           Step {index + 1}
                         </p>
                         <p
-                          className={`mt-2 text-sm leading-relaxed transition-colors ${
-                            isActive ? 'text-lg font-semibold text-slate-900' : 'font-medium text-slate-700'
+                          className={`mt-2 leading-relaxed transition-colors ${
+                            isActive ? 'text-sm font-normal text-slate-900' : 'text-sm font-normal text-slate-700'
                           }`}
                         >
                           {step}
@@ -144,25 +172,6 @@ function CookingGuide({
                   })}
                 </div>
               )}
-            </div>
-
-            <div className="mt-5 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onPrevStep}
-                disabled={!activeRecipe || currentStep === 0}
-                className="flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:text-slate-400"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={onNextStep}
-                disabled={!activeRecipe || currentStep === totalSteps - 1}
-                className="flex-1 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                Next
-              </button>
             </div>
           </div>
         </div>
