@@ -16,7 +16,6 @@ function App() {
       activeRecipe,
       detailsLoading,
       detailsError,
-      currentStep,
     },
     actions,
   } = useRecipeFlow()
@@ -51,10 +50,8 @@ function App() {
           activeRecipe={activeRecipe}
           detailsLoading={detailsLoading}
           detailsError={detailsError}
-          currentStep={currentStep}
           onBack={actions.goBackToIdeas}
           onRetry={() => actions.startCooking(selectedIdea)}
-          onSelectStep={actions.selectStep}
         />
       )}
     </main>

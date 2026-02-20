@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import type { FullRecipe, RecipeIdea } from '../types/recipe'
@@ -8,10 +7,8 @@ type RecipeDetailProps = {
   activeRecipe: FullRecipe | null
   detailsLoading: boolean
   detailsError: string | null
-  currentStep: number
   onBack: () => void
   onRetry: () => void
-  onSelectStep: (stepIndex: number) => void
 }
 
 function RecipeDetail({
@@ -19,67 +16,17 @@ function RecipeDetail({
   activeRecipe,
   detailsLoading,
   detailsError,
-  currentStep,
   onBack,
   onRetry,
-  onSelectStep,
 }: RecipeDetailProps) {
-  const touchStartY = useRef<number | null>(null)
-
-  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
-    initial: currentStep,
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+    initial: 0,
     vertical: true,
     mode: 'snap',
     drag: false,
     rubberband: false,
     slides: { perView: 'auto', spacing: 12 },
   })
-
-  useEffect(() => {
-    if (!activeRecipe || !slider.current) return
-
-    const currentSlide = slider.current.track.details.rel
-    if (currentSlide !== currentStep) {
-      slider.current.moveToIdx(currentStep, true)
-    }
-  }, [activeRecipe, currentStep, slider])
-
-  const handleStepKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!activeRecipe) return
-
-    if (event.key === 'ArrowDown' || event.key === 'PageDown') {
-      event.preventDefault()
-      onSelectStep(Math.min(currentStep + 1, activeRecipe.steps.length - 1))
-    }
-
-    if (event.key === 'ArrowUp' || event.key === 'PageUp') {
-      event.preventDefault()
-      onSelectStep(Math.max(currentStep - 1, 0))
-    }
-  }
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartY.current = event.touches[0]?.clientY ?? null
-  }
-
-  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!activeRecipe || touchStartY.current === null) return
-
-    const endY = event.changedTouches[0]?.clientY
-    if (typeof endY !== 'number') return
-
-    const deltaY = endY - touchStartY.current
-    touchStartY.current = null
-
-    if (Math.abs(deltaY) < 40) return
-
-    if (deltaY < 0) {
-      onSelectStep(Math.min(currentStep + 1, activeRecipe.steps.length - 1))
-      return
-    }
-
-    onSelectStep(Math.max(currentStep - 1, 0))
-  }
 
   return (
     <section className="max-w-6xl mx-auto py-8 px-4">
@@ -134,7 +81,7 @@ function RecipeDetail({
             Method & Instructions
           </h2>
 
-          <div className="flex flex-col h-auto max-h-[calc(100dvh-16rem)] overflow-hidden">
+          <div className="flex flex-col h-auto">
             {detailsLoading && (
               <div className="font-serif text-lg text-charcoal/50 italic animate-pulse">
                 Drafting the procedure...
@@ -156,24 +103,14 @@ function RecipeDetail({
               <div
                 ref={sliderRef}
                 className="recipe-step-slider keen-slider h-auto min-h-0 overflow-hidden outline-none"
-                onKeyDown={handleStepKeyDown}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                tabIndex={0}
                 aria-label="Recipe steps"
               >
                 {activeRecipe.steps.map((step, index) => {
-                  const isActive = index === currentStep
+                  const isLastStep = index === activeRecipe.steps.length - 1
                   return (
-                    <button
+                    <div
                       key={`${index}-${step}`}
-                      type="button"
-                      onClick={() => onSelectStep(index)}
-                      className={`keen-slider__slide h-auto text-left py-6 px-1 outline-none ${isActive
-                        ? 'opacity-100'
-                        : 'opacity-20 scale-95'
-                        }`}
-                      aria-current={isActive ? 'step' : undefined}
+                      className={`keen-slider__slide h-auto text-left px-1 outline-none opacity-100 ${isLastStep ? 'pt-6 pb-0' : 'py-6'}`}
                     >
                       <div className="flex gap-6 items-start">
                         <span className="font-display text-4xl text-charcoal/20 italic tabular-nums leading-none">
@@ -183,7 +120,7 @@ function RecipeDetail({
                           {step}
                         </p>
                       </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
