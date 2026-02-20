@@ -1,67 +1,93 @@
-type GeminiResponse = {
-  candidates?: Array<{
-    content?: {
-      parts?: Array<{ text?: string }>
-    }
-  }>
+const BASIC_AUTH_STORAGE_KEY = 'recipegen.basic_auth'
+
+type ProxyResponse = {
+  text?: string
+  error?: string
 }
 
-type GeminiErrorResponse = {
-  error?: {
-    code?: number
-    message?: string
-    status?: string
+let cachedAuthorization: string | null = null
+let attemptedInitialPrompt = false
+
+function clearSavedCredentials() {
+  cachedAuthorization = null
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(BASIC_AUTH_STORAGE_KEY)
+  }
+}
+
+function getAuthorizationHeader(): string {
+  if (cachedAuthorization) {
+    return cachedAuthorization
+  }
+
+  if (typeof window === 'undefined') {
+    throw new Error('Cannot prompt for credentials outside the browser.')
+  }
+
+  const saved = window.localStorage.getItem(BASIC_AUTH_STORAGE_KEY)
+  if (saved) {
+    cachedAuthorization = `Basic ${saved}`
+    return cachedAuthorization
+  }
+
+  const password = window.prompt('RecipeGen password')
+  if (!password) {
+    throw new Error('Password is required to use this app.')
+  }
+
+  const encoded = window.btoa(`:${password}`)
+  window.localStorage.setItem(BASIC_AUTH_STORAGE_KEY, encoded)
+  cachedAuthorization = `Basic ${encoded}`
+  return cachedAuthorization
+}
+
+export function preloadGeminiAuth() {
+  if (attemptedInitialPrompt) {
+    return
+  }
+
+  attemptedInitialPrompt = true
+  try {
+    getAuthorizationHeader()
+  } catch {
+    // User can retry on first generate action.
   }
 }
 
 export async function generateGeminiJson(promptText: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-  const model = import.meta.env.VITE_GEMINI_MODEL ?? 'gemini-2.5-flash'
-
-  if (!apiKey) {
-    throw new Error('Missing VITE_GEMINI_API_KEY in environment variables.')
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: promptText,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          responseMimeType: 'application/json',
-        },
-      }),
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthorizationHeader(),
     },
-  )
+    body: JSON.stringify({ promptText }),
+  })
 
   if (!response.ok) {
-    let details = ''
+    let message = `Request failed (${response.status}).`
+
     try {
-      const err = (await response.json()) as GeminiErrorResponse
-      details = err.error?.message ? ` ${err.error.message}` : ''
+      const payload = (await response.json()) as ProxyResponse
+      if (payload.error) {
+        message = payload.error
+      }
     } catch {
-      // Ignore parse errors and fall back to status-only message.
+      // Ignore parse errors and keep generic message.
     }
-    throw new Error(`Gemini request failed (${response.status}).${details}`)
+
+    if (response.status === 401) {
+      clearSavedCredentials()
+      throw new Error('Unauthorized. Check your password and try again.')
+    }
+
+    throw new Error(message)
   }
 
-  const data = (await response.json()) as GeminiResponse
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-
-  if (!text) {
-    throw new Error('Gemini returned an empty response.')
+  const payload = (await response.json()) as ProxyResponse
+  if (!payload.text) {
+    throw new Error('Gemini proxy returned an empty response.')
   }
 
-  return text
+  return payload.text
 }
