@@ -100,7 +100,7 @@ function CookingGuide({
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4 lg:order-2">
+          <aside className="max-h-[calc(100dvh-16rem)] overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4 lg:order-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Ingredients</h2>
             {activeRecipe ? (
               <ul className="mt-3 space-y-1 text-sm text-slate-700">
