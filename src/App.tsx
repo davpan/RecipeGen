@@ -1,15 +1,9 @@
-import { useEffect } from 'react'
 import Home from './views/Home'
 import RecipeIdeas from './views/RecipeIdeas'
 import CookingGuide from './views/CookingGuide'
 import { useRecipeFlow } from './hooks/useRecipeFlow'
-import { preloadGeminiAuth } from './services/geminiClient'
 
 function App() {
-  useEffect(() => {
-    preloadGeminiAuth()
-  }, [])
-
   const {
     state: {
       screen,

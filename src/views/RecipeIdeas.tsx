@@ -46,11 +46,17 @@ function RecipeIdeas({
         </div>
       </header>
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {ideas.map((idea) => (
-          <RecipeCard key={idea.id} idea={idea} onSelect={onSelectIdea} />
-        ))}
-      </div>
+      {loading && ideas.length === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+          Generating recipe ideas...
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {ideas.map((idea) => (
+            <RecipeCard key={idea.id} idea={idea} onSelect={onSelectIdea} />
+          ))}
+        </div>
+      )}
     </section>
   )
 }

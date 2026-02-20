@@ -21,7 +21,7 @@ type State = {
 
 type Action =
   | { type: 'setPrompt'; payload: string }
-  | { type: 'generateIdeasStart' }
+  | { type: 'generateIdeasStart'; payload: { prompt: string; keepCurrentIdeas: boolean } }
   | { type: 'generateIdeasSuccess'; payload: { prompt: string; ideas: RecipeIdea[] } }
   | { type: 'generateIdeasFailure'; payload: string }
   | { type: 'startCookingInit'; payload: RecipeIdea }
@@ -55,7 +55,14 @@ function reducer(state: State, action: Action): State {
     case 'setPrompt':
       return { ...state, prompt: action.payload }
     case 'generateIdeasStart':
-      return { ...state, loading: true, error: null }
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        screen: 'ideas',
+        submittedPrompt: action.payload.prompt,
+        ideas: action.payload.keepCurrentIdeas ? state.ideas : [],
+      }
     case 'generateIdeasSuccess':
       return {
         ...state,
@@ -144,7 +151,10 @@ export function useRecipeFlow() {
     const cleanedPrompt = basePrompt.trim()
     if (!cleanedPrompt) return
 
-    dispatch({ type: 'generateIdeasStart' })
+    dispatch({
+      type: 'generateIdeasStart',
+      payload: { prompt: cleanedPrompt, keepCurrentIdeas: previousIdeas.length > 0 },
+    })
 
     try {
       const ideas = await generateRecipeIdeas(cleanedPrompt, previousIdeas)

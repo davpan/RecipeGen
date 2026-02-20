@@ -6,7 +6,6 @@ type ProxyResponse = {
 }
 
 let cachedAuthorization: string | null = null
-let attemptedInitialPrompt = false
 
 function clearSavedCredentials() {
   cachedAuthorization = null
@@ -39,19 +38,6 @@ function getAuthorizationHeader(): string {
   window.localStorage.setItem(BASIC_AUTH_STORAGE_KEY, encoded)
   cachedAuthorization = `Basic ${encoded}`
   return cachedAuthorization
-}
-
-export function preloadGeminiAuth() {
-  if (attemptedInitialPrompt) {
-    return
-  }
-
-  attemptedInitialPrompt = true
-  try {
-    getAuthorizationHeader()
-  } catch {
-    // User can retry on first generate action.
-  }
 }
 
 export async function generateGeminiJson(promptText: string): Promise<string> {
