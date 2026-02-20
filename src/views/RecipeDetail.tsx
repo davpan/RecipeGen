@@ -3,7 +3,7 @@ import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import type { FullRecipe, RecipeIdea } from '../types/recipe'
 
-type CookingGuideProps = {
+type RecipeDetailProps = {
   selectedIdea: RecipeIdea
   activeRecipe: FullRecipe | null
   detailsLoading: boolean
@@ -14,7 +14,7 @@ type CookingGuideProps = {
   onSelectStep: (stepIndex: number) => void
 }
 
-function CookingGuide({
+function RecipeDetail({
   selectedIdea,
   activeRecipe,
   detailsLoading,
@@ -23,7 +23,7 @@ function CookingGuide({
   onBack,
   onRetry,
   onSelectStep,
-}: CookingGuideProps) {
+}: RecipeDetailProps) {
   const touchStartY = useRef<number | null>(null)
 
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
@@ -195,4 +195,4 @@ function CookingGuide({
   )
 }
 
-export default CookingGuide
+export default RecipeDetail

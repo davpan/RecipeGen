@@ -1,7 +1,7 @@
 import RecipeCard from '../components/RecipeCard'
 import type { RecipeIdea } from '../types/recipe'
 
-type RecipeIdeasProps = {
+type RecipeListProps = {
   submittedPrompt: string
   ideas: RecipeIdea[]
   loading: boolean
@@ -11,7 +11,7 @@ type RecipeIdeasProps = {
   onSelectIdea: (idea: RecipeIdea) => void
 }
 
-function RecipeIdeas({
+function RecipeList({
   submittedPrompt,
   ideas,
   loading,
@@ -19,7 +19,7 @@ function RecipeIdeas({
   onGenerateNew,
   onEditPrompt,
   onSelectIdea,
-}: RecipeIdeasProps) {
+}: RecipeListProps) {
   return (
     <section className="max-w-4xl mx-auto py-8">
       <header className="mb-12 flex flex-col items-center gap-6 border-b border-charcoal/10 pb-8">
@@ -64,4 +64,4 @@ function RecipeIdeas({
   )
 }
 
-export default RecipeIdeas
+export default RecipeList

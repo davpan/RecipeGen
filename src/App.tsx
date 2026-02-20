@@ -1,6 +1,6 @@
 import Home from './views/Home'
-import RecipeIdeas from './views/RecipeIdeas'
-import CookingGuide from './views/CookingGuide'
+import RecipeList from './views/RecipeList'
+import RecipeDetail from './views/RecipeDetail'
 import { useRecipeFlow } from './hooks/useRecipeFlow'
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
       )}
 
       {screen === 'ideas' && (
-        <RecipeIdeas
+        <RecipeList
           submittedPrompt={submittedPrompt}
           ideas={ideas}
           loading={loading}
@@ -46,7 +46,7 @@ function App() {
       )}
 
       {screen === 'cooking' && selectedIdea && (
-        <CookingGuide
+        <RecipeDetail
           selectedIdea={selectedIdea}
           activeRecipe={activeRecipe}
           detailsLoading={detailsLoading}
