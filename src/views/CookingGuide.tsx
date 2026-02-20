@@ -56,7 +56,7 @@ function CookingGuide({
         onClick={onBack}
         className="mb-4 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
       >
-        Back to ideas
+        Back
       </button>
 
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
