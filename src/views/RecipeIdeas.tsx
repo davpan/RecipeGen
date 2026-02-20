@@ -21,26 +21,34 @@ function RecipeIdeas({
   onSelectIdea,
 }: RecipeIdeasProps) {
   return (
-    <section>
-      <header className="mb-6 grid grid-cols-[auto,1fr,auto] items-center gap-3">
-        <button
-          type="button"
-          onClick={onEditPrompt}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
-        >
-          Back
-        </button>
-        <h1 className="text-center text-xl font-semibold text-slate-900">{submittedPrompt}</h1>
-        <button
-          type="button"
-          onClick={onGenerateNew}
-          disabled={loading}
-          className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-        >
-          {loading ? 'Generating...' : 'Refresh'}
-        </button>
+    <section className="max-w-4xl mx-auto py-8">
+      <header className="mb-12 flex flex-col items-center gap-6 border-b border-charcoal/10 pb-8">
+        <h1 className="font-display text-3xl text-charcoal italic text-center">
+          {submittedPrompt}
+        </h1>
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={onEditPrompt}
+            className="btn-print"
+          >
+            Refine Search
+          </button>
+          <button
+            type="button"
+            onClick={onGenerateNew}
+            disabled={loading}
+            className="btn-print"
+          >
+            {loading ? 'Searching...' : 'More Ideas'}
+          </button>
+        </div>
       </header>
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mb-8 font-sans text-sm uppercase tracking-widest text-red-800 italic text-center">
+          {error}
+        </p>
+      )}
       {loading && ideas.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
           Generating recipe ideas...

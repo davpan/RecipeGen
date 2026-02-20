@@ -10,7 +10,27 @@ body {
 }
 
 body {
-  @apply m-0 bg-slate-100 text-slate-900;
+  @apply m-0 bg-parchment-100 text-charcoal font-serif antialiased;
+}
+
+@layer components {
+  .btn-print {
+    @apply rounded-none border border-charcoal bg-transparent px-4 py-2;
+    @apply text-sm font-medium uppercase tracking-widest text-charcoal transition-all;
+    @apply hover:bg-charcoal hover:text-parchment-100 disabled:opacity-30;
+  }
+
+  .input-print {
+    @apply rounded-none border-b bg-transparent p-2 text-base outline-none transition-colors;
+    border-color: rgba(26, 26, 26, 0.2);
+    @apply focus:border-charcoal;
+  }
+
+  .card-print {
+    @apply border bg-white p-6 shadow-none transition-all;
+    border-color: rgba(26, 26, 26, 0.1);
+    @apply hover:border-charcoal;
+  }
 }
 
 * {

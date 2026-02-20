@@ -10,24 +10,24 @@ function RecipeCard({ idea, onSelect }: RecipeCardProps) {
     <button
       type="button"
       onClick={() => onSelect(idea)}
-      className="rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-slate-400"
+      className="card-print text-left"
     >
-      <h2 className="text-lg font-semibold text-slate-900">{idea.title}</h2>
-      <p className="mt-2 text-sm text-slate-600">{idea.description}</p>
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-xs text-slate-700">
-        <div>
-          <dt className="text-slate-500">Prep</dt>
-          <dd>{idea.prepTime}</dd>
+      <h2 className="font-display text-xl text-charcoal italic">{idea.title}</h2>
+      <p className="mt-3 font-serif text-sm leading-relaxed text-charcoal/70">{idea.description}</p>
+      <div className="mt-6 flex gap-6 font-sans text-[10px] uppercase tracking-widest text-charcoal/50">
+        <div className="flex gap-2">
+          <span className="font-bold">Prep</span>
+          <span>{idea.prepTime}</span>
         </div>
-        <div>
-          <dt className="text-slate-500">Cook</dt>
-          <dd>{idea.cookTime}</dd>
+        <div className="flex gap-2">
+          <span className="font-bold">Cook</span>
+          <span>{idea.cookTime}</span>
         </div>
-        <div>
-          <dt className="text-slate-500">Difficulty</dt>
-          <dd>{idea.difficulty}</dd>
+        <div className="flex gap-2">
+          <span className="font-bold">Level</span>
+          <span>{idea.difficulty}</span>
         </div>
-      </dl>
+      </div>
     </button>
   )
 }

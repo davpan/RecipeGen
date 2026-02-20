@@ -22,7 +22,7 @@ function App() {
   } = useRecipeFlow()
 
   return (
-    <main className="mx-auto h-dvh w-full max-w-4xl overflow-hidden p-4 sm:p-8">
+    <main className="mx-auto h-dvh w-full overflow-hidden bg-parchment-100">
       {screen === 'home' && (
         <Home
           prompt={prompt}

@@ -82,97 +82,112 @@ function CookingGuide({
   }
 
   return (
-    <section className="mx-auto max-w-5xl">
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-4 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
-      >
-        Back
-      </button>
+    <section className="max-w-6xl mx-auto py-8 px-4">
+      <div className="mb-8 flex justify-between items-center border-b border-charcoal/10 pb-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="btn-print"
+        >
+          &larr; Return to Library
+        </button>
+        <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/40">
+          Archival Series № 042
+        </span>
+      </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          {activeRecipe?.title ?? selectedIdea.title}
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {activeRecipe?.description ?? selectedIdea.description}
-        </p>
+      <div className="grid gap-12 lg:grid-cols-[300px_1fr]">
+        {/* Left Column: Meta & Ingredients */}
+        <aside className="space-y-12">
+          <div>
+            <h1 className="font-display text-4xl text-charcoal italic leading-tight">
+              {activeRecipe?.title ?? selectedIdea.title}
+            </h1>
+            <p className="mt-4 font-serif text-base leading-relaxed text-charcoal/70 italic">
+              {activeRecipe?.description ?? selectedIdea.description}
+            </p>
+          </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <aside className="max-h-[calc(100dvh-16rem)] overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4 lg:order-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Ingredients</h2>
+          <div className="pt-8 border-t border-charcoal/10 overflow-y-auto max-h-[calc(100dvh-25rem)] pr-2 scrollbar-thin">
+            <h2 className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal mb-6">
+              Ingredients
+            </h2>
             {activeRecipe ? (
-              <ul className="mt-3 space-y-1 text-sm text-slate-700">
+              <ul className="space-y-4 font-serif text-sm text-charcoal/80">
                 {activeRecipe.ingredients.map((ingredient) => (
-                  <li key={ingredient}>{ingredient}</li>
+                  <li key={ingredient} className="pb-2 border-b border-charcoal/5 last:border-0">
+                    {ingredient}
+                  </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-slate-500">Ingredients will appear once the recipe is ready.</p>
+              <div className="font-serif text-sm text-charcoal/40 italic">
+                {detailsLoading ? 'Cataloging ingredients...' : 'Ingredients pending selection.'}
+              </div>
             )}
-          </aside>
+          </div>
+        </aside>
 
-          <div className="flex min-h-0 max-h-[calc(100dvh-16rem)] flex-col lg:order-1">
-            <div className="min-h-0 flex-1">
-              {detailsLoading && (
-                <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-                  Generating the full recipe...
-                </p>
-              )}
-              {!detailsLoading && detailsError && (
-                <div className="space-y-3 rounded-lg bg-slate-50 p-4">
-                  <p className="text-sm text-red-600">{detailsError}</p>
-                  <button
-                    type="button"
-                    onClick={onRetry}
-                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white"
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
-              {!detailsLoading && !detailsError && activeRecipe && (
-                <div
-                  ref={sliderRef}
-                  className="recipe-step-slider keen-slider h-full min-h-0 overflow-hidden outline-none focus:outline-none focus-visible:outline-none"
-                  onKeyDown={handleStepKeyDown}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  tabIndex={0}
-                  aria-label="Recipe steps"
+        {/* Right Column: Steps */}
+        <div className="min-h-0">
+          <h2 className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal mb-6">
+            Method & Instructions
+          </h2>
+
+          <div className="flex flex-col h-auto max-h-[calc(100dvh-16rem)] overflow-hidden">
+            {detailsLoading && (
+              <div className="font-serif text-lg text-charcoal/50 italic animate-pulse">
+                Drafting the procedure...
+              </div>
+            )}
+            {!detailsLoading && detailsError && (
+              <div className="p-8 border border-red-800/10 bg-red-50/30 text-center">
+                <p className="font-serif text-red-900 italic mb-4">{detailsError}</p>
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="btn-print border-red-900 text-red-900 font-bold"
                 >
-                  {activeRecipe.steps.map((step, index) => {
-                    const isActive = index === currentStep
-                    return (
-                      <button
-                        key={`${index}-${step}`}
-                        type="button"
-                        onClick={() => onSelectStep(index)}
-                        style={{ minHeight: 'auto' }}
-                        className={`keen-slider__slide h-auto rounded-lg px-4 py-4 text-left transition-colors transition-opacity transition-shadow duration-200 outline-none focus:outline-none focus-visible:outline-none ${
-                          isActive
-                            ? 'border border-slate-900 bg-white shadow-md'
-                            : 'border border-transparent bg-transparent opacity-70'
+                  Attempt Recovery
+                </button>
+              </div>
+            )}
+            {!detailsLoading && !detailsError && activeRecipe && (
+              <div
+                ref={sliderRef}
+                className="recipe-step-slider keen-slider h-auto min-h-0 overflow-hidden outline-none"
+                onKeyDown={handleStepKeyDown}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                tabIndex={0}
+                aria-label="Recipe steps"
+              >
+                {activeRecipe.steps.map((step, index) => {
+                  const isActive = index === currentStep
+                  return (
+                    <button
+                      key={`${index}-${step}`}
+                      type="button"
+                      onClick={() => onSelectStep(index)}
+                      className={`keen-slider__slide h-auto text-left py-6 px-1 outline-none ${isActive
+                        ? 'opacity-100'
+                        : 'opacity-20 scale-95'
                         }`}
-                        aria-current={isActive ? 'step' : undefined}
-                      >
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Step {index + 1}
-                        </p>
-                        <p
-                          className={`mt-2 leading-relaxed transition-colors ${
-                            isActive ? 'text-sm font-normal text-slate-900' : 'text-sm font-normal text-slate-700'
-                          }`}
-                        >
+                      aria-current={isActive ? 'step' : undefined}
+                    >
+                      <div className="flex gap-6 items-start">
+                        <span className="font-display text-4xl text-charcoal/20 italic tabular-nums leading-none">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <p className="font-serif text-lg leading-relaxed text-charcoal pt-1">
                           {step}
                         </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
