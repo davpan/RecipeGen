@@ -99,8 +99,8 @@ function CookingGuide({
           {activeRecipe?.description ?? selectedIdea.description}
         </p>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <aside className="rounded-lg border border-slate-200 bg-slate-50 p-4 lg:order-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Ingredients</h2>
             {activeRecipe ? (
               <ul className="mt-3 space-y-1 text-sm text-slate-700">
@@ -113,7 +113,7 @@ function CookingGuide({
             )}
           </aside>
 
-          <div className="flex min-h-0 max-h-[calc(100dvh-16rem)] flex-col">
+          <div className="flex min-h-0 max-h-[calc(100dvh-16rem)] flex-col lg:order-1">
             <div className="min-h-0 flex-1">
               {detailsLoading && (
                 <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
@@ -135,7 +135,7 @@ function CookingGuide({
               {!detailsLoading && !detailsError && activeRecipe && (
                 <div
                   ref={sliderRef}
-                  className="recipe-step-slider keen-slider h-full min-h-0 overflow-hidden"
+                  className="recipe-step-slider keen-slider h-full min-h-0 overflow-hidden outline-none focus:outline-none focus-visible:outline-none"
                   onKeyDown={handleStepKeyDown}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
@@ -150,10 +150,10 @@ function CookingGuide({
                         type="button"
                         onClick={() => onSelectStep(index)}
                         style={{ minHeight: 'auto' }}
-                        className={`keen-slider__slide h-auto rounded-lg px-4 py-4 text-left transition-colors transition-opacity transition-shadow duration-200 ${
+                        className={`keen-slider__slide h-auto rounded-lg px-4 py-4 text-left transition-colors transition-opacity transition-shadow duration-200 outline-none focus:outline-none focus-visible:outline-none ${
                           isActive
                             ? 'border border-slate-900 bg-white shadow-md'
-                            : 'border-transparent bg-transparent opacity-70 hover:opacity-100'
+                            : 'border border-transparent bg-transparent opacity-70'
                         }`}
                         aria-current={isActive ? 'step' : undefined}
                       >

@@ -21,8 +21,13 @@ function App() {
     actions,
   } = useRecipeFlow()
 
+  const mainClassName =
+    screen === 'cooking'
+      ? 'mx-auto h-dvh w-full max-w-4xl overflow-hidden p-4 sm:p-8'
+      : 'mx-auto min-h-screen w-full max-w-4xl p-4 sm:p-8'
+
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl p-4 sm:p-8">
+    <main className={mainClassName}>
       {screen === 'home' && (
         <Home
           prompt={prompt}
